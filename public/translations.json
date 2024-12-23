@@ -1,0 +1,222 @@
+{
+  "en": {
+    "navbar": {
+      "pages": [
+        { "name": "About", "link": "/about" },
+        { "name": "Services", "link": "/services" },
+        { "name": "Contact", "link": "/contact" }
+      ],
+      "settings": [
+        { "name": "Profile", "link": "/profile" },
+        { "name": "History", "link": "/history" },
+        { "name": "Admin", "link": "/admin" }
+      ],
+      "login": "Login",
+      "language": "Language"
+    },
+    "homepage": {
+      "heroTitle": "Welcome to Baicao Wellness Centre",
+      "heroDetails": "Discover relaxation and rejuvenation",
+      "exploreServices": "Explore Our Services",
+      "exploreAbout": "Learn More About Us",
+      "servicesTitle": "Our Services",
+      "contactBanner": "Ready to Rejuvenate? Visit Us Today!",
+      "contactButton": "Contact Us",
+      "customerCommentsTitle": "What Our Customers Say",
+      "customerComments": [
+        {
+          "text": "The steaming therapy was incredibly relaxing, and the massage left me feeling rejuvenated. Highly recommend this wellness center!",
+          "author": "John Doe"
+        },
+        {
+          "text": "A truly professional experience. The staff is attentive, and the ambiance is peaceful. I'll definitely be back for more treatments.",
+          "author": "Jane Smith"
+        },
+        {
+          "text": "Best massage experience ever! The therapists are skilled and made sure I felt comfortable the entire time.",
+          "author": "Alice Brown"
+        }
+      ]
+    },
+    "loginModal": {
+      "login": "Login",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "signup": "Signup",
+      "alreadyHaveAccount": "Already Have Account?",
+      "createAccount": "Create Account"
+    },
+    "services": {
+      "title": "Services",
+      "details": "We offer a variety of professional health and massage services aimed at improving your physical function, relieving stress, and providing relaxation and rejuvenation for the body and mind.",
+      "serviceList": [
+        {
+          "title": "Massage",
+          "description": "Using professional techniques to relieve muscle tension, promote blood circulation, and help the body regain vitality and relax the mind and body.",
+          "image": "/service1.webp"
+        },
+        {
+          "title": "Gua Sha",
+          "description": "Using specific tools and techniques to promote blood circulation, relieve muscle soreness, and improve immunity.",
+          "image": "/service2.jpeg"
+        },
+        {
+          "title": "Cupping",
+          "description": "Using cupping therapy to help eliminate internal moisture and cold, reduce muscle pain, and improve overall health.",
+          "image": "/service3.jpg"
+        },
+        {
+          "title": "Herbal Steam",
+          "description": "Combining traditional herbal medicine with steam therapy to promote detoxification, relieve muscle tension, and enhance body function.",
+          "image": "/service4.jpg"
+        }
+      ]
+    },
+    "about": {
+      "title": "About",
+      "introText": "At Baicao Wellness Centre, we are committed to providing a relaxing and rejuvenating experience for all our customers. Here, you can find detailed information about our range of services, including steaming, massage, scraping, cupping, and other therapeutic treatments.",
+      "valuesText": "We take pride in our team of professional technicians, ensuring that each customer receives high-quality services tailored to their needs. Our approach is rooted in the concept of 'Health First' and 'Customer First,' as we aim to deliver an exceptional wellness experience that prioritizes your well-being.",
+      "valuesTitle": "Our Values",
+      "valuesList": [
+        "Commitment to Health First",
+        "Customer Satisfaction is Our Priority",
+        "High-Quality Services by Professional Technicians"
+      ]
+    },
+    "contact": {
+      "title": "Contact Us",
+      "contactInfo": "Contact Information",
+      "address": {
+        "title": "Address",
+        "description": "123 Baicao Street, Wellness City, Country"
+      },
+      "phone": {
+        "title": "Phone",
+        "description": "(647)285-8211"
+      },
+      "email": {
+        "title": "Email",
+        "description": "baicaowellness@gmail.com"
+      },
+      "visitUs": {
+        "title": "Visit Us Today!",
+        "description": "We are open from 9:00 AM to 7:00 PM every day. Whether you're looking for a relaxing massage or professional steaming therapy, our team is here to serve you. Come visit us at our wellness center and experience rejuvenation like never before."
+      }
+    },
+    "footer": {
+      "rights": "All Rights Reserved",
+      "contact": "Contact Us"
+    }
+  },
+  "zh": {
+    "navbar": {
+      "pages": [
+        { "name": "关于", "link": "/about" },
+        { "name": "服务", "link": "/services" },
+        { "name": "联系", "link": "/contact" }
+      ],
+      "settings": [
+        { "name": "个人资料", "link": "/profile" },
+        { "name": "历史", "link": "/history" },
+        { "name": "注销" }
+      ],
+      "language": "语言",
+      "login": "登录"
+    },
+    "homepage": {
+      "heroTitle": "欢迎来到百草蒸薰堂",
+      "heroDetails": "发现放松与焕发活力的体验",
+      "exploreServices": "探索我们的服务",
+      "exploreAbout": "了解更多关于我们的信息",
+      "servicesTitle": "我们的服务",
+      "contactBanner": "准备好焕发活力了吗？今天就来访我们吧！",
+      "contactButton": "联系我们",
+      "customerCommentsTitle": "客户评价",
+      "customerComments": [
+        {
+          "text": "蒸汽疗法令人感到非常放松，按摩让我焕然一新。强烈推荐这家养生中心！",
+          "author": "约翰·多伊"
+        },
+        {
+          "text": "一次真正专业的体验。工作人员非常细心，氛围宁静。我一定会再来接受更多的护理。",
+          "author": "简·史密斯"
+        },
+        {
+          "text": "最棒的按摩体验！理疗师技艺高超，确保我全程都感到舒适。",
+          "author": "爱丽丝·布朗"
+        }
+      ]
+    },
+    "loginModal": {
+      "login": "登录",
+      "email": "电子邮件",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "signup": "注册",
+      "alreadyHaveAccount": "已有账户？",
+      "createAccount": "创建账户"
+    },
+    "services": {
+      "title": "服务",
+      "details": "我们提供多种专业的健康和按摩服务，旨在改善您的身体机能，减轻压力，带来身心的放松与焕发。",
+      "serviceList": [
+        {
+          "title": "按摩",
+          "description": "通过专业手法缓解肌肉紧张，促进血液循环，帮助身体恢复活力和放松身心。",
+          "image": "https://blog.worldgymtaiwan.com/hs-fs/hubfs/%E3%80%8C%E9%81%8B%E5%8B%95%E6%8C%89%E6%91%A9%E3%80%8D%E8%88%87%E4%B8%80%E8%88%AC%E6%8E%A8%E6%8B%BF%E5%B7%AE%E5%88%A5%E7%82%BA%E4%BD%95%3F%E8%A9%B2%E6%80%8E%E9%BA%BC%E9%81%B8%E6%89%8D%E5%A5%BD%3F.jpg?width=700&height=467&name=%E3%80%8C%E9%81%8B%E5%8B%95%E6%8C%89%E6%91%A9%E3%80%8D%E8%88%87%E4%B8%80%E8%88%AC%E6%8E%A8%E6%8B%BF%E5%B7%AE%E5%88%A5%E7%82%BA%E4%BD%95%3F%E8%A9%B2%E6%80%8E%E9%BA%BC%E9%81%B8%E6%89%8D%E5%A5%BD%3F.jpg"
+        },
+        {
+          "title": "刮痧",
+          "description": "通过特定工具和手法，促进血液循环，减轻肌肉酸痛并提高免疫力。",
+          "image": "https://cdn.hk01.com/di/media/images/dw/20230804/764212581622616064843150.jpeg/8-bNiniaGlbggZyymeYCBUYunx4qsop9pBeCsKQXgrA?v=w1280r16_9"
+        },
+        {
+          "title": "拔罐",
+          "description": "使用拔罐技术，帮助排除体内湿气和寒气，减轻肌肉疼痛并提高健康水平。",
+          "image": "https://i.epochtimes.com/assets/uploads/2020/04/cupping-therapy2_1144521428-600x400.jpg"
+        },
+        {
+          "title": "药蒸",
+          "description": "结合中药材和蒸汽疗法，促进排毒、舒缓肌肉紧张，增强身体功能。",
+          "image": "https://img.alicdn.com/imgextra/i1/2217837433900/O1CN01SOeYa91egFfBx71kd_!!2217837433900.jpg"
+        }
+      ]
+    },
+    "about": {
+      "title": "关于",
+      "introText": "在百草养生中心，我们致力于为所有顾客提供一个放松和焕发活力的体验。在这里，您可以找到关于我们一系列服务的详细信息，包括蒸汽疗法、按摩、刮痧、拔罐和其他治疗性疗法。",
+      "valuesText": "我们为我们的专业技术团队感到自豪，确保每位顾客都能接受根据其需求量身定制的高质量服务。我们的做法根植于“健康至上”和“顾客至上”的理念，旨在提供一个优质的养生体验，优先考虑您的健康与福祉。",
+      "valuesTitle": "我们的价值观",
+      "valuesList": [
+        "承诺健康至上",
+        "顾客满意是我们的首要任务",
+        "由专业技术人员提供高质量服务"
+      ]
+    },
+    "contact": {
+      "title": "联系我们",
+      "contactInfo": "联系信息",
+      "address": {
+        "title": "地址",
+        "description": "123 Baicao Street, Wellness City, Country"
+      },
+      "phone": {
+        "title": "电话",
+        "description": "(647)285-8211"
+      },
+      "email": {
+        "title": "电子邮件",
+        "description": "baicaowellness@gmail.com"
+      },
+      "visitUs": {
+        "title": "今天来拜访我们！",
+        "description": "我们每天从上午9点到晚上7点开放。无论您是寻求放松的按摩，还是专业的蒸汽疗法，我们的团队都在为您服务。快来我们的健康中心，体验前所未有的恢复活力！"
+      }
+    },
+    "footer": {
+      "rights": "版权所有",
+      "contact": "联系我们"
+    }
+  }
+}
