@@ -10,21 +10,16 @@ export default function Navbar() {
   return (
     <div className="flex w-full px-8 bg-primary items-center justify-between">
       <div className="flex items-center">
-        <Link
-          href="/"
-          className="mr-8 flex font-mono font-bold tracking-[.3rem] text-[18px]"
-        >
-          Baicao
+        <Link href="/">
+          <div className="mr-8 flex font-mono font-bold tracking-[.3rem] text-[18px]">
+            Baicao
+          </div>
         </Link>
 
         <div className="flex gap-4">
           {pages?.map((page) => (
-            <Link
-              href={page.link}
-              key={page.name}
-              className="p-4 py-6 font-mono"
-            >
-              {page.name}
+            <Link href={page.link} key={page.name}>
+              <div className="p-4 py-6 font-mono">{page.name}</div>
             </Link>
           ))}
         </div>

@@ -1,6 +1,9 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
 import Card from "../ui/home/card";
+import { useEffect, useState } from "react";
+import Carousel from "../ui/home/carousel";
 
 const translations = {
   homepage: {
@@ -60,9 +63,42 @@ const translations = {
   },
 };
 
-export default function Home() {
+export default function Page() {
+  const [currentCommentIndex, setCurrentCommentIndex] = useState(0);
+
+  // Rotate through comments every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentCommentIndex((prevIndex) =>
+        prevIndex === translations.homepage.customerComments.length - 1
+          ? 0
+          : prevIndex + 1
+      );
+    }, 5000); // 5000ms = 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Function to go to the next comment
+  const handleNextComment = () => {
+    setCurrentCommentIndex((prevIndex) =>
+      prevIndex === translations.homepage.customerComments.length - 1
+        ? 0
+        : prevIndex + 1
+    );
+  };
+
+  // Function to go to the previous comment
+  const handlePrevComment = () => {
+    setCurrentCommentIndex((prevIndex) =>
+      prevIndex === 0
+        ? translations.homepage.customerComments.length - 1
+        : prevIndex - 1
+    );
+  };
+
   return (
-    <main className="bg-slate-100">
+    <main>
       {/* Hero section */}
       <section
         className="bg-cover h-[65vh] bg-center text-white flex items-center justify-center flex-col"
@@ -75,32 +111,49 @@ export default function Home() {
           {translations.homepage.heroDetails}
         </h5>
         <div className="flex justify-center gap-4">
-          <Link
-            href="/services"
-            className="px-8 py-3 text-primary border border-primary rounded-full hover:bg-primary hover:text-white hover:border-transparent transition-all"
-          >
-            {translations.homepage.exploreServices}
+          <Link href="/services">
+            <div className="px-8 py-3 text-primary border font-bold border-primary rounded-full hover:bg-primary hover:text-white hover:border-transparent transition-all">
+              {translations.homepage.exploreServices}
+            </div>
           </Link>
-          <Link
-            href="/about"
-            className="px-8 py-3 text-primary border border-primary rounded-full hover:bg-primary hover:text-white hover:border-transparent transition-all"
-          >
-            {translations.homepage.exploreAbout}
+          <Link href="/about">
+            <div className="px-8 py-3 text-primary border font-bold border-primary rounded-full hover:bg-primary hover:text-white hover:border-transparent transition-all">
+              {translations.homepage.exploreAbout}
+            </div>
           </Link>
         </div>
       </section>
-      <section className="container mx-auto py-12">
-        <h4 className="text-3xl font-bold text-center text-green-600 mb-8">
+
+      {/* Services section */}
+      <section className="container mx-auto py-12 max-w-screen-lg">
+        <h4 className="text-3xl font-bold text-center text-primary mb-8">
           {translations.homepage.servicesTitle}
         </h4>
 
         <div className="flex flex-wrap justify-center gap-8">
           {translations.services.serviceList.map((service) => (
             <div key={service.title}>
-              <Card title={service.title} image={service.image} />
+              <Card
+                title={service.title}
+                image={service.image}
+                link={`/services#${service.title}`}
+              />
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Comment section */}
+      <section className="container mx-auto py-12 pb-20">
+        <h4 className="text-3xl font-bold text-center text-primary mb-8">
+          {translations.homepage.customerCommentsTitle}
+        </h4>
+        <Carousel
+          comments={translations.homepage.customerComments}
+          currentCommentIndex={currentCommentIndex}
+          handleNextComment={handleNextComment}
+          handlePrevComment={handlePrevComment}
+        />
       </section>
     </main>
   );

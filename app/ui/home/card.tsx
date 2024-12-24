@@ -5,28 +5,26 @@ import React from "react";
 interface CardProps {
   title: string;
   image: string;
+  link: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, image }) => {
+export default function Card({ title, image, link }: CardProps) {
   return (
-    <Link
-      href={"/services"}
-      className="max-w-sm rounded-lg overflow-hidden shadow-lg bg-white hover:shadow-xl transition-all"
-    >
-      <div className="w-full h-48 relative">
-        <Image
-          src={image}
-          alt={title}
-          width={400} // Fixed width
-          height={200} // Fixed height
-          objectFit="cover" // Ensure the image covers the area without distortion
-          className="rounded-t-lg"
-        />
+    <Link href={link}>
+      <div className="rounded-lg overflow-hidden bg-white hover:scale-105 transform transition-all shadow-md ease-in ">
+        <div style={{ width: "400px", height: "200px", position: "relative" }}>
+          <Image
+            src={image}
+            alt={title}
+            fill
+            style={{ objectFit: "cover" }}
+            className="rounded-lg"
+          />
+        </div>
+        <h3 className="p-4 text-xl font-semibold text-primary mb-2 text-center">
+          {title}
+        </h3>
       </div>
-
-      <h3 className="p-4 text-xl font-semibold text-primary mb-2">{title}</h3>
     </Link>
   );
-};
-
-export default Card;
+}
