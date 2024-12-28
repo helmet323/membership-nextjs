@@ -45,7 +45,8 @@
       "confirmPassword": "Confirm Password",
       "signup": "Signup",
       "alreadyHaveAccount": "Already Have Account?",
-      "createAccount": "Create Account"
+      "createAccount": "Create Account",
+      "loading": "Loading"
     },
     "services": {
       "title": "Services",

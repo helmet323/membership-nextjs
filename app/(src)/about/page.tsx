@@ -31,9 +31,9 @@ export default function Page() {
           />
         </div>
         <div className="relative z-10 flex justify-center items-center h-32 rounded-lg">
-          <h3 className="text-primary text-[48px] uppercase tracking-wide">
+          <h1 className="text-primary text-[48px] uppercase tracking-wide">
             {translations?.about?.title}
-          </h3>
+          </h1>
         </div>
       </div>
 
@@ -49,21 +49,19 @@ export default function Page() {
 
       {/* Values Section */}
       <div>
-        <h6 className="text-xl font-bold text-secondary mb-4">
+        <h2 className="text-xl font-bold text-secondary mb-4">
           {translations?.about?.valuesTitle}
-        </h6>
+        </h2>
 
         <div className="bg-white shadow-xl rounded-lg p-6">
-          <ul className="list-none p-0">
-            {translations?.about?.valuesList.map((value, index) => (
-              <div key={index}>
-                <li className="py-2 text-lg text-gray-800">{value}</li>
-                {index < translations?.about?.valuesList.length - 1 && (
-                  <hr className="my-2 border-t border-gray-200" />
-                )}
-              </div>
-            ))}
-          </ul>
+          {translations?.about?.valuesList.map((value, index) => (
+            <div key={index}>
+              <div className="py-2 text-lg text-gray-800">{value}</div>
+              {index < translations?.about?.valuesList.length - 1 && (
+                <hr className="my-2 border-t border-gray-200" />
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

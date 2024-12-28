@@ -1,9 +1,9 @@
 "use client";
 
+import Card from "@/app/ui/home/card";
+import Carousel from "@/app/ui/home/carousel";
 import Link from "next/link";
-import Card from "../ui/home/card";
 import { useEffect, useState } from "react";
-import Carousel from "../ui/home/carousel";
 
 const translations = {
   homepage: {

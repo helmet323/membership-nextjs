@@ -38,17 +38,17 @@ export default function Page() {
           />
         </div>
         <div className="relative z-10 flex justify-center items-center h-32 rounded-lg">
-          <h3 className="text-primary text-[48px] uppercase tracking-wide">
+          <h1 className="text-primary text-[48px] uppercase tracking-wide">
             {translations?.contact?.title}
-          </h3>
+          </h1>
         </div>
       </div>
 
       {/* Contact Information */}
       <div className="p-4">
-        <h5 className="text-primary text-2xl font-semibold mb-6 underline">
+        <h2 className="text-primary text-2xl font-semibold mb-6 underline">
           {translations?.contact?.contactInfo}
-        </h5>
+        </h2>
 
         <p className="text-gray-800 text-lg mb-4">
           <strong>{translations?.contact?.address.title}:</strong>{" "}
@@ -70,9 +70,9 @@ export default function Page() {
 
       {/* Visit Us Section */}
       <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h6 className="text-secondary text-xl font-semibold text-center mb-4">
+        <h3 className="text-secondary text-xl font-semibold text-center mb-4">
           {translations?.contact?.visitUs.title}
-        </h6>
+        </h3>
 
         <p className="text-gray-600 text-center text-lg leading-relaxed">
           {translations?.contact?.visitUs.description}
