@@ -4,12 +4,13 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDu51vQ_K6OniQwG7cpXopJtMqtigJag-E",
+  authDomain: "baicaowellnesscentre-a6b2e.firebaseapp.com",
+  projectId: "baicaowellnesscentre-a6b2e",
+  storageBucket: "baicaowellnesscentre-a6b2e.firebasestorage.app",
+  messagingSenderId: "310888224770",
+  appId: "1:310888224770:web:08efdd2bcbb4ca89966f1b",
+  measurementId: "G-CMQEV4HY4R",
 };
 
 // Initialize Firebase

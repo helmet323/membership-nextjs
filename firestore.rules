@@ -1,0 +1,17 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{email} {
+      // Allow anyone to read user data
+      allow read: if true;
+
+      // Only admins can create users
+      allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'admin';
+
+      // Only the user themselves can update their own data
+      allow update: if request.auth != null && (request.auth.token.email == email || get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'admin');
+
+      // Only admins can delete users
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == 'admin';
+    }
+  }
+}
