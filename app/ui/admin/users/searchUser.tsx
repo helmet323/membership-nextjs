@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/app/config/firebase";
 import EditUser from "./editUser";
+import CreatePayment from "./createPayment";
+import ViewPayments from "./viewPayments";
 
 const SearchUser: React.FC = () => {
   const [searchEmail, setSearchEmail] = useState<string>("");
@@ -12,7 +14,9 @@ const SearchUser: React.FC = () => {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [isEditUserVisible, setIsEditUserVisible] = useState<boolean>(false); // New state for controlling visibility of EditUser component
+  const [activeComponent, setActiveComponent] = useState<
+    "editUser" | "createPayment" | "viewPayments" | null
+  >(null);
 
   const handleSearch = async () => {
     if (!searchEmail.trim()) {
@@ -44,16 +48,19 @@ const SearchUser: React.FC = () => {
   };
 
   const handleEditClick = () => {
-    setIsEditUserVisible(!isEditUserVisible);
+    setActiveComponent((prev) => (prev === "editUser" ? null : "editUser"));
   };
 
-  const handleRoleUpdate = (newRole: string) => {
-    setUser((prev) => {
-      if (prev === null) {
-        return null;
-      }
-      return { ...prev, role: newRole };
-    });
+  const handleCreatePaymentClick = () => {
+    setActiveComponent((prev) =>
+      prev === "createPayment" ? null : "createPayment"
+    );
+  };
+
+  const handleViewPaymentClick = () => {
+    setActiveComponent((prev) =>
+      prev === "viewPayments" ? null : "viewPayments"
+    );
   };
 
   return (
@@ -94,21 +101,53 @@ const SearchUser: React.FC = () => {
           <p>
             <strong>Role:</strong> {user.role}
           </p>
-          <button
-            onClick={handleEditClick}
-            className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
-          >
-            {isEditUserVisible ? "Cancel Edit" : "Edit User"}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={handleEditClick}
+              className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
+            >
+              {activeComponent === "editUser" ? "Cancel Edit" : "Edit User"}
+            </button>
+            <button
+              onClick={handleCreatePaymentClick}
+              className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
+            >
+              {activeComponent === "createPayment"
+                ? "Cancel Payment"
+                : "Add Payment"}
+            </button>
+            <button
+              onClick={handleViewPaymentClick}
+              className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
+            >
+              {activeComponent === "viewPayments"
+                ? "Cancel View"
+                : "View Payments"}
+            </button>
+          </div>
 
-          {/* Show the EditUser component only when the button is clicked */}
-          {isEditUserVisible && (
+          {/* Render the active component */}
+          {activeComponent === "editUser" && (
             <div className="mt-4">
               <EditUser
                 email={user.email}
                 currentRole={user.role}
-                onRoleUpdate={handleRoleUpdate}
+                onRoleUpdate={(newRole) => {
+                  setUser((prev) => (prev ? { ...prev, role: newRole } : null));
+                }}
               />
+            </div>
+          )}
+
+          {activeComponent === "createPayment" && (
+            <div>
+              <CreatePayment email={user.email} />
+            </div>
+          )}
+
+          {activeComponent === "viewPayments" && (
+            <div>
+              <ViewPayments email={user.email} />
             </div>
           )}
         </div>
