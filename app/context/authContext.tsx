@@ -17,21 +17,40 @@ import {
   getFirestore,
   setDoc,
   doc,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthContextType {
   currentUser: User | null;
-  role: string | null;
-  signup: (email: string, password: string, role: string) => Promise<void>;
+  userData: UserData | null;
+  signup: (
+    email: string,
+    password: string,
+    referredBy?: string
+  ) => Promise<void>;
+  adminSignup: (
+    email: string,
+    role: string,
+    referredBy?: string
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  error: string | null;
-  setError: (error: string | null) => void;
+  checkReferral: (referralEmail: string) => Promise<string>;
 }
 
 interface FirestoreUser {
   email: string;
   role: string;
+  referralCode: string;
+  createdAt: Timestamp;
+}
+
+interface UserData {
+  email: string;
+  role: string;
+  referralCode: string;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -46,9 +65,8 @@ export function useAuth(): AuthContextType {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const db = getFirestore();
 
@@ -65,7 +83,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0]; // We assume the email is unique
           const userData = userDoc.data() as FirestoreUser; // Cast to FirestoreUser type
-          setRole(userData.role || null);
+          setUserData({
+            email: userData.email,
+            role: userData.role,
+            referralCode: userData.referralCode,
+          });
         }
       }
       setLoading(false);
@@ -77,10 +99,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (
     email: string,
     password: string,
-    role: string
+    referredBy?: string
   ): Promise<void> => {
     try {
-      setError(null); // Reset previous errors
+      // Check if email already exists in Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      // Create user in Firebase Authentication regardless of Firestore existence
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -88,58 +115,138 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
       const user = userCredential.user;
 
-      // After user is created, store their role in Firestore using their email
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        role: role, // Save role to Firestore
-      });
-      setRole(role); // Set the role in context
-    } catch (error: unknown) {
-      console.error("Signup failed:", error);
-      if (error instanceof Error) {
-        setError(error.message); // Handle known error
-      } else {
-        setError("An unknown error occurred during signup.");
+      // Check if user.email is null
+      if (!user.email) {
+        throw new Error("User email is null.");
       }
+
+      // If the email is not already in Firestore, create the record in Firestore
+      if (querySnapshot.empty) {
+        const userRef = doc(db, "users", email); // Using email as document ID
+        const userData = {
+          email,
+          role: "user",
+          referralCode: uuidv4(),
+          referredBy: referredBy || "",
+          createdAt: serverTimestamp(),
+        };
+
+        await setDoc(userRef, userData); // Add user to Firestore
+      }
+
+      // Set user data in context
+      setUserData({
+        email: user.email,
+        role: "user",
+        referralCode: uuidv4(),
+      });
+    } catch (error) {
+      console.error("Signup failed:", error);
+      throw error;
+    }
+  };
+
+  // Admin signup
+  const adminSignup = async (
+    email: string,
+    role: string,
+    referredBy?: string
+  ): Promise<void> => {
+    try {
+      // Check if the email already exists in Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      // If the email already exists, do not create a new record
+      if (!querySnapshot.empty) {
+        throw new Error("User already exists with this email.");
+      }
+
+      // Create a user object
+      const user = {
+        email,
+        role,
+        referralCode: uuidv4(),
+        referredBy: referredBy || "",
+        createdAt: serverTimestamp(),
+      };
+
+      // Store the user data in Firestore, using email as the document ID
+      await setDoc(doc(db, "users", email), user);
+      console.log("User added successfully!");
+    } catch (error) {
+      console.error("Add user failed:", error);
+      throw error;
     }
   };
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      setError(null); // Reset previous errors
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: unknown) {
-      console.error("Login failed:", error);
-      if (error instanceof Error) {
-        setError(error.message); // Handle known error
-      } else {
-        setError("An unknown error occurred during login.");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      ); // Firebase login
+      const user = userCredential.user;
+
+      // Query Firestore for the user document that matches the email
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", user.email));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data() as FirestoreUser;
+        setUserData({
+          email: userData.email,
+          role: userData.role,
+          referralCode: userData.referralCode,
+        });
       }
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      setError(null); // Reset previous errors
       await signOut(auth);
-    } catch (error: unknown) {
+      setCurrentUser(null); // Ensure currentUser is cleared
+      setUserData(null); // Ensure userData is cleared
+    } catch (error) {
       console.error("Logout failed:", error);
-      if (error instanceof Error) {
-        setError(error.message); // Handle known error
-      } else {
-        setError("An unknown error occurred during logout.");
+      throw error;
+    }
+  };
+
+  const checkReferral = async (referralEmail: string): Promise<string> => {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", referralEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data() as UserData; // Cast to UserData type
+        return userData.referralCode;
       }
+
+      return ""; // If no user is found
+    } catch (error) {
+      console.error("Error checking referral:", error);
+      throw new Error("Failed to check referral.");
     }
   };
 
   const value: AuthContextType = {
     currentUser,
-    role,
+    userData,
     signup,
+    adminSignup,
     login,
     logout,
-    error,
-    setError,
+    checkReferral,
   };
 
   return (

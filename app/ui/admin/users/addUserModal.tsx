@@ -2,8 +2,7 @@
 
 // Import necessary dependencies
 import { useState } from "react";
-import { serverTimestamp, doc, setDoc } from "firebase/firestore";
-import { db } from "@/app/config/firebase";
+import { useAuth } from "@/app/context/authContext";
 
 const AddUserModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
@@ -11,11 +10,17 @@ const AddUserModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
 }) => {
   const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<string>("user");
+  const [referral, setReferral] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [referralValid, setReferralValid] = useState<boolean>(false); // State to track if referral is valid
 
-  const handleAddUser = async () => {
-    console.log(email, role);
+  const { adminSignup, checkReferral } = useAuth();
+
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!email || !role) {
       setErrorMessage("Email and Role are required.");
       return;
@@ -25,25 +30,44 @@ const AddUserModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
     setErrorMessage("");
 
     try {
-      // Add user to Firestore with email as document ID
-      const userRef = doc(db, "users", email); // Using email as document ID
-      const user = {
-        email,
-        role,
-        createdAt: serverTimestamp(),
-      };
-
-      await setDoc(userRef, user); // Set the document with the user data
-
+      await adminSignup(email, role, referralCode); // Pass referral to the signup function
       alert("User added successfully!");
-
-      onClose();
-
+      // Clear the form data after successful addition
       setEmail("");
       setRole("user");
+      setReferral("");
+      setReferralCode("");
+      setReferralValid(false);
+      onClose(); // Close the modal after adding the user
     } catch (error) {
-      console.error("Error adding user:", error);
-      setErrorMessage("Failed to add user.");
+      setErrorMessage("Failed to add admin.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckReferral = async () => {
+    if (!referral) {
+      setErrorMessage("Referral email is required.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const userCode = await checkReferral(referral); // Implement this in your `useAuth`
+      if (userCode) {
+        setReferralCode(userCode); // Store the referral data temporarily
+        setReferralValid(true); // Set referral as valid
+      } else {
+        setReferralValid(false); // Set referral as invalid
+        setErrorMessage("Referral not found.");
+      }
+    } catch (error) {
+      setErrorMessage("Error checking referral.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -93,6 +117,40 @@ const AddUserModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
             <option value="admin">Admin</option>
           </select>
         </div>
+
+        <div className="mb-4">
+          <label htmlFor="referral" className="block text-sm font-medium mb-2">
+            Referral (optional)
+          </label>
+          <div className="flex items-center space-x-2">
+            <input
+              type="email"
+              id="referral"
+              value={referral}
+              onChange={(e) => setReferral(e.target.value)}
+              className="w-full p-2 border border-gray-400 rounded"
+              placeholder="Enter referral email"
+            />
+            <button
+              type="button"
+              onClick={handleCheckReferral}
+              disabled={loading}
+              className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-primary hover:bg-secondary"
+              }`}
+            >
+              {loading ? "Checking..." : "Check"}
+            </button>
+          </div>
+          {referralValid && (
+            <div className="mt-2 text-green-500 text-sm">
+              Referral is valid!
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={handleAddUser}

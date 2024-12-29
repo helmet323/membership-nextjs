@@ -4,7 +4,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { Transition } from "@headlessui/react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/authContext";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface ToggleMenuProps {
   settings: { name: string; link: string }[];
@@ -12,6 +12,7 @@ interface ToggleMenuProps {
 
 const ToggleMenu: React.FC<ToggleMenuProps> = ({ settings }) => {
   const { logout } = useAuth();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -25,10 +26,15 @@ const ToggleMenu: React.FC<ToggleMenuProps> = ({ settings }) => {
     setIsOpen(false);
   };
 
-  const handleLogOut = () => {
-    handleClose();
-    logout();
-    redirect("/");
+  const handleLogout = async () => {
+    try {
+      handleClose();
+      await logout();
+      router.push("/");
+    } catch (err) {
+      console.error("Error logging out:", err);
+      alert("An error occurred while logging out. Please try again.");
+    }
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -85,7 +91,7 @@ const ToggleMenu: React.FC<ToggleMenuProps> = ({ settings }) => {
             ))}
             <div
               className="block px-6 py-2 text-sm hover:bg-gray-100 text-black transition-all duration-150 cursor-pointer"
-              onClick={handleLogOut}
+              onClick={handleLogout}
             >
               Logout
             </div>

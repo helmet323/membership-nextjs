@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useAuth } from "../context/authContext";
-import LoginModal from "./navbar/loginModal";
 import ToggleMenu from "./navbar/toggleMenu";
 
 const translations = {
@@ -18,20 +16,13 @@ const translations = {
       { name: "History", link: "/history" },
       { name: "Admin", link: "/admin" },
     ],
-    login: "Login",
+    login: { name: "Login", link: "/login?mode=login" },
     language: "Language",
   },
 };
 
 export default function Navbar() {
   const { currentUser } = useAuth();
-  const [openLoginModal, setOpenLoginModal] = useState<boolean>(false);
-  const handleOpenLoginModal = () => {
-    setOpenLoginModal(true);
-  };
-  const handleCloseLoginModal = () => {
-    setOpenLoginModal(false);
-  };
 
   return (
     <div className="w-full px-8 bg-primary">
@@ -60,16 +51,12 @@ export default function Navbar() {
             </div>
           ) : (
             <div>
-              <button
+              <Link
                 className="border py-2 px-4 rounded-md hover:bg-[rgba(255,255,255,0.1)] font-mono"
-                onClick={handleOpenLoginModal}
+                href={translations?.navbar?.login?.link}
               >
-                {translations?.navbar?.login}
-              </button>
-              <LoginModal
-                open={openLoginModal}
-                handleClose={handleCloseLoginModal}
-              />
+                {translations?.navbar?.login?.name}
+              </Link>
             </div>
           )}
         </div>
