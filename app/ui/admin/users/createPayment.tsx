@@ -1,58 +1,112 @@
 import React, { useState } from "react";
-import { serverTimestamp, collection, addDoc } from "firebase/firestore";
+import {
+  serverTimestamp,
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  where,
+  query,
+  getDocs,
+  increment,
+} from "firebase/firestore";
 import { db } from "@/app/config/firebase"; // Adjust import path
 
-interface PaymentProps {
+interface CreatePaymentProps {
   email: string;
+  points: number;
+  referredBy?: string;
+  onPointsUpdate: (newPoints: number) => void;
 }
 
-const CreatePayment: React.FC<PaymentProps> = ({ email }) => {
+const CreatePayment: React.FC<CreatePaymentProps> = ({
+  email,
+  points,
+  referredBy,
+  onPointsUpdate,
+}) => {
   const [amount, setAmount] = useState<number>(0);
   const [service, setService] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate the form fields
     if (amount <= 0 || !service) {
-      alert("Please fill in all fields correctly.");
+      setErrorMessage("Please fill in all fields correctly.");
       return;
     }
 
     setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
-      const paymentsCollection = collection(db, "payments"); // Firestore reference
+      const paymentsCollection = collection(db, "payments");
       await addDoc(paymentsCollection, {
         email,
         amount,
         service,
         createdAt: serverTimestamp(),
       });
+
+      // Update points for user
+      const userDocRef = doc(db, "users", email);
+      await updateDoc(userDocRef, {
+        points: increment(amount), // Increase points by the amount spent
+      });
+      onPointsUpdate(points + amount);
+
+      // Handle referral update
+      if (referredBy) {
+        const usersCollection = collection(db, "users");
+        const q = query(
+          usersCollection,
+          where("referralCode", "==", referredBy)
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const referralDoc = querySnapshot.docs[0];
+          const referralDocRef = doc(db, "users", referralDoc.id);
+          await updateDoc(referralDocRef, {
+            points: increment(amount / 10), // Referral gets 10% of the amount
+          });
+        }
+      }
+
       alert("Payment record created successfully!");
       setAmount(0);
       setService("");
+      onPointsUpdate(points + amount); // Refresh user points in parent
     } catch (error) {
       console.error("Error adding document: ", error);
-      alert("Error creating payment record.");
+      setErrorMessage("Error creating payment record. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle amount input change and ensure a valid number is set
+  // Handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const parsedValue = parseFloat(value);
     if (!value || !isNaN(parsedValue)) {
-      setAmount(parsedValue); // Allow empty value or valid number
+      setAmount(parsedValue);
     }
   };
 
   return (
     <div className="mt-4 p-6 border border-gray-300 rounded-lg shadow-md">
       <h2 className="text-lg font-bold mb-4">Create Payment</h2>
+
+      {/* Display error message if any */}
+      {errorMessage && (
+        <div className="text-red-500 text-sm mb-4">{errorMessage}</div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Amount Input */}
         <div>
@@ -65,7 +119,7 @@ const CreatePayment: React.FC<PaymentProps> = ({ email }) => {
           <input
             id="amount"
             type="number"
-            value={amount || ""} // Ensure a string is set when amount is 0
+            value={amount || ""}
             onChange={handleAmountChange}
             required
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"

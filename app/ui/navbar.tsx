@@ -14,7 +14,7 @@ const translations = {
     settings: [
       { name: "Profile", link: "/profile" },
       { name: "History", link: "/history" },
-      { name: "Admin", link: "/admin" },
+      // Admin link will be conditionally rendered
     ],
     login: { name: "Login", link: "/login?mode=login" },
     language: "Language",
@@ -22,7 +22,14 @@ const translations = {
 };
 
 export default function Navbar() {
-  const { currentUser } = useAuth();
+  const { userData } = useAuth(); // Fetch user data from auth context
+
+  // Conditionally add Admin link if the user is an admin
+  const settings = [
+    { name: "Profile", link: "/profile" },
+    { name: "History", link: "/history" },
+    ...(userData?.role === "admin" ? [{ name: "Admin", link: "/admin" }] : []), // Admin link conditionally added
+  ];
 
   return (
     <div className="w-full px-8 bg-primary">
@@ -45,9 +52,9 @@ export default function Navbar() {
         <div className="flex items-center gap-6 font-mono">
           <div>{translations?.navbar?.language}</div>
 
-          {currentUser ? (
+          {userData ? (
             <div>
-              <ToggleMenu settings={translations?.navbar?.settings} />
+              <ToggleMenu settings={settings} />{" "}
             </div>
           ) : (
             <div>

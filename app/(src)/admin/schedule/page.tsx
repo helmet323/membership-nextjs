@@ -1,3 +1,3 @@
 export default function Page() {
-  return <div>Services page</div>;
+  return <div>Schedule page</div>;
 }

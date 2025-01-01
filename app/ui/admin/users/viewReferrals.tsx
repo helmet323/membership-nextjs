@@ -1,46 +1,45 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
   query,
   where,
-  orderBy,
   limit,
-  startAfter,
+  orderBy,
   DocumentSnapshot,
   Timestamp,
+  startAfter,
 } from "firebase/firestore";
 import { db } from "@/app/config/firebase";
 
-interface Payment {
+type Referral = {
+  id: string;
   email: string;
-  amount: number;
-  service: string;
+  role: string;
   createdAt: Timestamp;
-}
+};
 
-interface ViewPaymentsProps {
-  email: string;
-}
-
-const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+const ViewReferrals: React.FC<{ referralCode: string }> = ({
+  referralCode,
+}) => {
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [lastVisible, setLastVisible] = useState<DocumentSnapshot | null>(null);
 
-  // Fetch payments based on page number
-  const fetchPayments = async (page: number) => {
-    setIsLoading(true);
+  const fetchReferrals = async (page: number) => {
+    setLoading(true);
     setError(""); // Clear any existing errors
 
     try {
-      const paymentsCollection = collection(db, "payments");
+      const referralsRef = collection(db, "users");
       let q = query(
-        paymentsCollection,
-        where("email", "==", email),
+        referralsRef,
+        where("referredBy", "==", referralCode),
         orderBy("createdAt", "desc"), // Order by createdAt
         limit(5) // Limit to 5 referrals per page
       );
@@ -53,39 +52,39 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        const paymentsData: Payment[] = querySnapshot.docs.map((doc) => ({
+        const referralData: Referral[] = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
           email: doc.data().email,
-          amount: doc.data().amount,
-          service: doc.data().service,
+          role: doc.data().role,
           createdAt: doc.data().createdAt,
         }));
-
-        setPayments(paymentsData);
+        setReferrals(referralData);
         setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
 
-        // Calculate total pages only once
+        // Update total pages based on the total number of referrals
         if (totalPages === 1) {
           const totalDocsSnapshot = await getDocs(
-            query(paymentsCollection, where("email", "==", email))
+            query(referralsRef, where("referredBy", "==", referralCode))
           );
-          setTotalPages(Math.ceil(totalDocsSnapshot.size / 5));
+          setTotalPages(Math.ceil(totalDocsSnapshot.size / 5)); // Calculate total pages
         }
       } else {
-        setError("No payments found.");
+        setError("No referrals found.");
       }
     } catch (err) {
-      setError("Error fetching payments.");
-      console.error("Error fetching payments: ", err);
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred."
+      );
+      console.error("Error fetching referrals:", err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPayments(currentPage);
-  }, [email, currentPage]);
+    fetchReferrals(currentPage);
+  }, [referralCode, currentPage]);
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     if (page !== currentPage) {
       setCurrentPage(page);
@@ -95,40 +94,39 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
   return (
     <div className="mt-6 border border-gray-200 rounded-lg shadow-md overflow-hidden bg-white">
       <div className="bg-gray-100 px-6 py-4">
-        <h2 className="text-lg font-semibold text-gray-800">Payments</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Referrals</h2>
       </div>
 
-      {/* Loading, Error, and Data Display */}
-      {isLoading ? (
-        <div className="p-6 text-center text-gray-500">Loading...</div>
+      {loading ? (
+        <div className="p-6 text-center text-gray-500">
+          Loading referrals...
+        </div>
       ) : error ? (
         <div className="p-6 text-center text-red-500">{error}</div>
-      ) : payments.length === 0 ? (
+      ) : referrals.length === 0 ? (
         <div className="p-6 text-center text-gray-500">
-          No payments found for this email.
+          No referrals found for this user.
         </div>
       ) : (
         <div>
           <table className="w-full border-collapse text-left text-sm">
             <thead>
               <tr className="bg-gray-200 text-gray-700">
-                <th className="py-3 px-4 border-b">Service</th>
-                <th className="py-3 px-4 border-b">Amount</th>
-                <th className="py-3 px-4 border-b">Date</th>
+                <th className="py-3 px-4 border-b">Email</th>
+                <th className="py-3 px-4 border-b">Role</th>
+                <th className="py-3 px-4 border-b">Created At</th>
               </tr>
             </thead>
             <tbody>
-              {payments.map((payment, index) => (
+              {referrals.map((referral, index) => (
                 <tr
-                  key={index}
-                  className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  key={referral.id}
+                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
                 >
-                  <td className="py-3 px-4 border-b">{payment.service}</td>
-                  <td className="py-3 px-4 border-b text-gray-600">
-                    ${payment.amount.toFixed(2)}
-                  </td>
-                  <td className="py-3 px-4 border-b text-gray-600">
-                    {payment.createdAt.toDate().toLocaleString()}
+                  <td className="py-3 px-4 border-b">{referral.email}</td>
+                  <td className="py-3 px-4 border-b">{referral.role}</td>
+                  <td className="py-3 px-4 border-b">
+                    {referral.createdAt.toDate().toLocaleString()}
                   </td>
                 </tr>
               ))}
@@ -157,4 +155,4 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
   );
 };
 
-export default ViewPayments;
+export default ViewReferrals;

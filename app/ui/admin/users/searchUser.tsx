@@ -1,24 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import React, { useState, useCallback } from "react";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "@/app/config/firebase";
 import EditUser from "./editUser";
 import CreatePayment from "./createPayment";
 import ViewPayments from "./viewPayments";
+import ViewReferrals from "./viewReferrals";
+
+interface UserData {
+  email: string;
+  role: string;
+  referralCode: string;
+  referredBy?: string;
+  points: number;
+  createdAt: Timestamp;
+}
 
 const SearchUser: React.FC = () => {
   const [searchEmail, setSearchEmail] = useState<string>("");
-  const [user, setUser] = useState<{ email: string; role: string } | null>(
-    null
-  );
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [activeComponent, setActiveComponent] = useState<
-    "editUser" | "createPayment" | "viewPayments" | null
-  >(null);
+    "editUser" | "createPayment" | "viewPayments" | "viewReferrals" | ""
+  >("");
 
-  const handleSearch = async () => {
+  // Handle search for user
+  const handleSearch = useCallback(async () => {
     if (!searchEmail.trim()) {
       setErrorMessage("Please enter an email.");
       return;
@@ -26,7 +41,7 @@ const SearchUser: React.FC = () => {
 
     setLoading(true);
     setErrorMessage("");
-    setUser(null);
+    setUserData(null);
 
     try {
       const usersCollection = collection(db, "users");
@@ -35,7 +50,14 @@ const SearchUser: React.FC = () => {
 
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
-        setUser({ email: doc.id, role: doc.data().role });
+        setUserData({
+          email: doc.data().email,
+          role: doc.data().role,
+          referralCode: doc.data().referralCode,
+          referredBy: doc.data().referredBy,
+          points: doc.data().points,
+          createdAt: doc.data().createdAt,
+        });
       } else {
         setErrorMessage("User not found.");
       }
@@ -45,23 +67,22 @@ const SearchUser: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchEmail]);
 
-  const handleEditClick = () => {
-    setActiveComponent((prev) => (prev === "editUser" ? null : "editUser"));
-  };
-
-  const handleCreatePaymentClick = () => {
-    setActiveComponent((prev) =>
-      prev === "createPayment" ? null : "createPayment"
-    );
-  };
-
-  const handleViewPaymentClick = () => {
-    setActiveComponent((prev) =>
-      prev === "viewPayments" ? null : "viewPayments"
-    );
-  };
+  // Toggle active components for UI interaction
+  const toggleComponent = useCallback(
+    (
+      component:
+        | "editUser"
+        | "createPayment"
+        | "viewPayments"
+        | "viewReferrals"
+        | ""
+    ) => {
+      setActiveComponent((prev) => (prev === component ? "" : component));
+    },
+    []
+  );
 
   return (
     <div>
@@ -92,24 +113,27 @@ const SearchUser: React.FC = () => {
         <div className="mt-4 text-red-500 text-sm">{errorMessage}</div>
       )}
 
-      {user && (
+      {userData && (
         <div className="mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-white">
           <h2 className="text-xl font-bold mb-2">User Details</h2>
           <p>
-            <strong>Email:</strong> {user.email}
+            <strong>Email:</strong> {userData.email}
           </p>
           <p>
-            <strong>Role:</strong> {user.role}
+            <strong>Role:</strong> {userData.role}
+          </p>
+          <p>
+            <strong>Points:</strong> {userData.points}
           </p>
           <div className="flex gap-4">
             <button
-              onClick={handleEditClick}
+              onClick={() => toggleComponent("editUser")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
               {activeComponent === "editUser" ? "Cancel Edit" : "Edit User"}
             </button>
             <button
-              onClick={handleCreatePaymentClick}
+              onClick={() => toggleComponent("createPayment")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
               {activeComponent === "createPayment"
@@ -117,37 +141,62 @@ const SearchUser: React.FC = () => {
                 : "Add Payment"}
             </button>
             <button
-              onClick={handleViewPaymentClick}
+              onClick={() => toggleComponent("viewPayments")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
               {activeComponent === "viewPayments"
                 ? "Cancel View"
                 : "View Payments"}
             </button>
+            <button
+              onClick={() => toggleComponent("viewReferrals")}
+              className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
+            >
+              {activeComponent === "viewReferrals"
+                ? "Cancel View"
+                : "View Referrals"}
+            </button>
           </div>
 
           {/* Render the active component */}
-          {activeComponent === "editUser" && (
+          {activeComponent === "editUser" && userData && (
             <div className="mt-4">
               <EditUser
-                email={user.email}
-                currentRole={user.role}
+                email={userData.email}
+                currentRole={userData.role}
                 onRoleUpdate={(newRole) => {
-                  setUser((prev) => (prev ? { ...prev, role: newRole } : null));
+                  setUserData((prev) =>
+                    prev ? { ...prev, role: newRole } : null
+                  );
                 }}
               />
             </div>
           )}
 
-          {activeComponent === "createPayment" && (
+          {activeComponent === "createPayment" && userData && (
             <div>
-              <CreatePayment email={user.email} />
+              <CreatePayment
+                email={userData.email}
+                points={userData.points}
+                referredBy={userData.referredBy}
+                onPointsUpdate={(newPoints) => {
+                  setUserData((prev) =>
+                    prev ? { ...prev, points: newPoints } : null
+                  );
+                }}
+              />
             </div>
           )}
 
-          {activeComponent === "viewPayments" && (
+          {activeComponent === "viewPayments" && userData && (
             <div>
-              <ViewPayments email={user.email} />
+              <ViewPayments email={userData.email} />
+            </div>
+          )}
+
+          {activeComponent === "viewReferrals" && userData && (
+            <div>
+              <ViewReferrals referralCode={userData.referralCode} />
             </div>
           )}
         </div>

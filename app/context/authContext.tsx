@@ -6,7 +6,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User,
 } from "firebase/auth";
 import { auth } from "../config/firebase";
 import {
@@ -23,7 +22,6 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 interface AuthContextType {
-  currentUser: User | null;
   userData: UserData | null;
   signup: (
     email: string,
@@ -40,17 +38,13 @@ interface AuthContextType {
   checkReferral: (referralEmail: string) => Promise<string>;
 }
 
-interface FirestoreUser {
-  email: string;
-  role: string;
-  referralCode: string;
-  createdAt: Timestamp;
-}
-
 interface UserData {
   email: string;
   role: string;
   referralCode: string;
+  referredBy: string;
+  points: number;
+  createdAt: Timestamp;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -64,7 +58,6 @@ export function useAuth(): AuthContextType {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -73,8 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCurrentUser(user);
-
         // Query Firestore for the user document that matches the email
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", user.email));
@@ -82,12 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0]; // We assume the email is unique
-          const userData = userDoc.data() as FirestoreUser; // Cast to FirestoreUser type
-          setUserData({
-            email: userData.email,
-            role: userData.role,
-            referralCode: userData.referralCode,
-          });
+          const userData = userDoc.data() as UserData;
+          setUserData(userData);
         }
       }
       setLoading(false);
@@ -128,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: "user",
           referralCode: uuidv4(),
           referredBy: referredBy || "",
+          points: 0,
           createdAt: serverTimestamp(),
         };
 
@@ -135,11 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Set user data in context
-      setUserData({
-        email: user.email,
-        role: "user",
-        referralCode: uuidv4(),
-      });
+      setUserData(userData);
     } catch (error) {
       console.error("Signup failed:", error);
       throw error;
@@ -169,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role,
         referralCode: uuidv4(),
         referredBy: referredBy || "",
+        points: 0,
         createdAt: serverTimestamp(),
       };
 
@@ -197,12 +182,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data() as FirestoreUser;
-        setUserData({
-          email: userData.email,
-          role: userData.role,
-          referralCode: userData.referralCode,
-        });
+        const userData = userDoc.data() as UserData;
+        setUserData(userData);
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -213,7 +194,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async (): Promise<void> => {
     try {
       await signOut(auth);
-      setCurrentUser(null); // Ensure currentUser is cleared
       setUserData(null); // Ensure userData is cleared
     } catch (error) {
       console.error("Logout failed:", error);
@@ -240,7 +220,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const value: AuthContextType = {
-    currentUser,
     userData,
     signup,
     adminSignup,
