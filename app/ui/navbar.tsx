@@ -11,11 +11,6 @@ const translations = {
       { name: "Services", link: "/services" },
       { name: "Contact", link: "/contact" },
     ],
-    settings: [
-      { name: "Profile", link: "/profile" },
-      { name: "History", link: "/history" },
-      // Admin link will be conditionally rendered
-    ],
     login: { name: "Login", link: "/login?mode=login" },
     language: "Language",
   },

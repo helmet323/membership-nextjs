@@ -13,12 +13,14 @@ import EditUser from "./editUser";
 import CreatePayment from "./createPayment";
 import ViewPayments from "./viewPayments";
 import ViewReferrals from "./viewReferrals";
+import AddFund from "./addFund";
 
 interface UserData {
   email: string;
   role: string;
   referralCode: string;
   referredBy?: string;
+  funds: number;
   points: number;
   createdAt: Timestamp;
 }
@@ -29,7 +31,12 @@ const SearchUser: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [activeComponent, setActiveComponent] = useState<
-    "editUser" | "createPayment" | "viewPayments" | "viewReferrals" | ""
+    | "editUser"
+    | "createPayment"
+    | "viewPayments"
+    | "viewReferrals"
+    | "addFund"
+    | ""
   >("");
 
   // Handle search for user
@@ -55,6 +62,7 @@ const SearchUser: React.FC = () => {
           role: doc.data().role,
           referralCode: doc.data().referralCode,
           referredBy: doc.data().referredBy,
+          funds: doc.data().funds,
           points: doc.data().points,
           createdAt: doc.data().createdAt,
         });
@@ -77,6 +85,7 @@ const SearchUser: React.FC = () => {
         | "createPayment"
         | "viewPayments"
         | "viewReferrals"
+        | "addFund"
         | ""
     ) => {
       setActiveComponent((prev) => (prev === component ? "" : component));
@@ -123,6 +132,9 @@ const SearchUser: React.FC = () => {
             <strong>Role:</strong> {userData.role}
           </p>
           <p>
+            <strong>Funds:</strong> {userData.funds}
+          </p>
+          <p>
             <strong>Points:</strong> {userData.points}
           </p>
           <div className="flex gap-4">
@@ -130,30 +142,34 @@ const SearchUser: React.FC = () => {
               onClick={() => toggleComponent("editUser")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
-              {activeComponent === "editUser" ? "Cancel Edit" : "Edit User"}
+              {activeComponent === "editUser" ? "Cancel" : "Edit User"}
             </button>
             <button
               onClick={() => toggleComponent("createPayment")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
               {activeComponent === "createPayment"
-                ? "Cancel Payment"
-                : "Add Payment"}
+                ? "Cancel"
+                : "Create Payment"}
+            </button>
+            <button
+              onClick={() => toggleComponent("addFund")}
+              className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
+            >
+              {activeComponent === "addFund" ? "Cancel" : "Add Fund"}
             </button>
             <button
               onClick={() => toggleComponent("viewPayments")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
-              {activeComponent === "viewPayments"
-                ? "Cancel View"
-                : "View Payments"}
+              {activeComponent === "viewPayments" ? "Cancel" : "View Payments"}
             </button>
             <button
               onClick={() => toggleComponent("viewReferrals")}
               className="mt-4 py-2 px-4 bg-primary text-white rounded hover:bg-secondary"
             >
               {activeComponent === "viewReferrals"
-                ? "Cancel View"
+                ? "Cancel"
                 : "View Referrals"}
             </button>
           </div>
@@ -178,10 +194,16 @@ const SearchUser: React.FC = () => {
               <CreatePayment
                 email={userData.email}
                 points={userData.points}
+                funds={userData.funds}
                 referredBy={userData.referredBy}
                 onPointsUpdate={(newPoints) => {
                   setUserData((prev) =>
                     prev ? { ...prev, points: newPoints } : null
+                  );
+                }}
+                onFundsUpdate={(newFunds) => {
+                  setUserData((prev) =>
+                    prev ? { ...prev, funds: newFunds } : null
                   );
                 }}
               />
@@ -197,6 +219,19 @@ const SearchUser: React.FC = () => {
           {activeComponent === "viewReferrals" && userData && (
             <div>
               <ViewReferrals referralCode={userData.referralCode} />
+            </div>
+          )}
+          {activeComponent === "addFund" && userData && (
+            <div>
+              <AddFund
+                email={userData.email}
+                funds={userData.funds}
+                onFundsUpdate={(newFunds) => {
+                  setUserData((prev) =>
+                    prev ? { ...prev, funds: newFunds } : null
+                  );
+                }}
+              />
             </div>
           )}
         </div>

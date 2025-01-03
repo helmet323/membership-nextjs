@@ -15,7 +15,9 @@ import { db } from "@/app/config/firebase";
 interface Payment {
   email: string;
   amount: number;
-  service: string;
+  type: string;
+  service?: string;
+  paymentMethod: string; // New field for payment method
   createdAt: Timestamp;
 }
 
@@ -31,21 +33,19 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [lastVisible, setLastVisible] = useState<DocumentSnapshot | null>(null);
 
-  // Fetch payments based on page number
   const fetchPayments = async (page: number) => {
     setIsLoading(true);
-    setError(""); // Clear any existing errors
+    setError("");
 
     try {
       const paymentsCollection = collection(db, "payments");
       let q = query(
         paymentsCollection,
         where("email", "==", email),
-        orderBy("createdAt", "desc"), // Order by createdAt
-        limit(5) // Limit to 5 referrals per page
+        orderBy("createdAt", "desc"),
+        limit(5)
       );
 
-      // Fetch data based on page number
       if (page > 1 && lastVisible) {
         q = query(q, startAfter(lastVisible));
       }
@@ -56,14 +56,19 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
         const paymentsData: Payment[] = querySnapshot.docs.map((doc) => ({
           email: doc.data().email,
           amount: doc.data().amount,
-          service: doc.data().service,
+          type: doc.data().type,
+          service:
+            doc.data().type === "service_payment"
+              ? doc.data().service
+              : undefined,
+          paymentMethod: doc.data().paymentMethod, // Assuming this field exists
           createdAt: doc.data().createdAt,
         }));
 
         setPayments(paymentsData);
         setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
 
-        // Calculate total pages only once
+        // Update the totalPages only if it's not already set
         if (totalPages === 1) {
           const totalDocsSnapshot = await getDocs(
             query(paymentsCollection, where("email", "==", email))
@@ -85,7 +90,6 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
     fetchPayments(currentPage);
   }, [email, currentPage]);
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     if (page !== currentPage) {
       setCurrentPage(page);
@@ -98,7 +102,6 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
         <h2 className="text-lg font-semibold text-gray-800">Payments</h2>
       </div>
 
-      {/* Loading, Error, and Data Display */}
       {isLoading ? (
         <div className="p-6 text-center text-gray-500">Loading...</div>
       ) : error ? (
@@ -109,11 +112,14 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
         </div>
       ) : (
         <div>
-          <table className="w-full border-collapse text-left text-sm">
+          <table className="w-full table-auto border-collapse text-left text-sm">
             <thead>
               <tr className="bg-gray-200 text-gray-700">
+                <th className="py-3 px-4 border-b">Type</th>
                 <th className="py-3 px-4 border-b">Service</th>
-                <th className="py-3 px-4 border-b">Amount</th>
+                <th className="py-3 px-4 border-b text-right">Amount</th>
+                <th className="py-3 px-4 border-b">Payment Method</th>{" "}
+                {/* New column */}
                 <th className="py-3 px-4 border-b">Date</th>
               </tr>
             </thead>
@@ -123,10 +129,31 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
                   key={index}
                   className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                 >
-                  <td className="py-3 px-4 border-b">{payment.service}</td>
-                  <td className="py-3 px-4 border-b text-gray-600">
-                    ${payment.amount.toFixed(2)}
+                  <td className="py-3 px-4 border-b capitalize">
+                    {payment.type?.replace("_", " ")
+                      ? payment.type?.replace("_", " ")
+                      : "N/A"}
                   </td>
+                  <td className="py-3 px-4 border-b">
+                    {payment.service || "N/A"}
+                  </td>
+                  <td className="py-3 px-4 border-b text-right">
+                    <span
+                      className={`${
+                        payment.type === "service_payment"
+                          ? "text-red-500"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {payment.type === "service_payment"
+                        ? `- $${payment.amount.toFixed(2)}`
+                        : `$${payment.amount.toFixed(2)}`}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 border-b">
+                    {payment.paymentMethod ? payment.paymentMethod : "N/A"}
+                  </td>
+                  {/* Display payment method */}
                   <td className="py-3 px-4 border-b text-gray-600">
                     {payment.createdAt.toDate().toLocaleString()}
                   </td>
@@ -135,7 +162,6 @@ const ViewPayments: React.FC<ViewPaymentsProps> = ({ email }) => {
             </tbody>
           </table>
 
-          {/* Pagination */}
           <div className="p-4 bg-gray-100 flex justify-center space-x-2">
             {Array.from({ length: totalPages }, (_, index) => (
               <button

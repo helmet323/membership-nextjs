@@ -43,6 +43,7 @@ interface UserData {
   role: string;
   referralCode: string;
   referredBy: string;
+  funds: number;
   points: number;
   createdAt: Timestamp;
 }
@@ -59,7 +60,7 @@ export function useAuth(): AuthContextType {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Track loading state
 
   const db = getFirestore();
 
@@ -115,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: "user",
           referralCode: uuidv4(),
           referredBy: referredBy || "",
+          funds: 0,
           points: 0,
           createdAt: serverTimestamp(),
         };
@@ -153,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role,
         referralCode: uuidv4(),
         referredBy: referredBy || "",
+        funds: 0,
         points: 0,
         createdAt: serverTimestamp(),
       };
